@@ -6,11 +6,11 @@ logging.basicConfig(level=logging.INFO, format=FORMAT)
 logger = logging.getLogger("Main")
 
 
-def add_dns(ingress=None, zone_id=None, elb_zone_id=None, elb_dns=None, region=None, profile=None):
+def modify(ingress=None, zone_id=None, elb_zone_id=None, elb_dns=None, region=None, profile=None, action="UPSERT"):
     boto3.setup_default_session(profile_name=profile)
     route53 = boto3.client("route53")
 
-    logger.info("Creating dns entry for ingress")
+    logger.info(f"{action}ING dns entry for ingress")
 
     logger.info(f"name: {ingress}")
     logger.info(f"zone_id: {zone_id}")
@@ -22,7 +22,7 @@ def add_dns(ingress=None, zone_id=None, elb_zone_id=None, elb_dns=None, region=N
             'Comment': f"DNS Entry for nginx ingress on kubernetes with name {ingress}",
             'Changes': [
                 {
-                    'Action': 'UPSERT', #'CREATE', #|'DELETE'|'UPSERT',
+                    'Action': f'{action}',
                     'ResourceRecordSet': {
                         'Name': f"{ingress}",
                         'Region' : f'{region}',
@@ -41,3 +41,24 @@ def add_dns(ingress=None, zone_id=None, elb_zone_id=None, elb_dns=None, region=N
     )
 
     logger.info(f"Response: {response}")
+
+
+def remove_dns(ingress=None, zone_id=None, elb_zone_id=None, elb_dns=None, region=None, profile=None):
+    modify(ingress=ingress,
+           zone_id=zone_id,
+           elb_zone_id=elb_zone_id,
+           elb_dns=elb_dns,
+           region=region,
+           profile=profile,
+           action="DELETE")
+
+
+def add_dns(ingress=None, zone_id=None, elb_zone_id=None, elb_dns=None, region=None, profile=None):
+    modify(ingress=ingress,
+           zone_id=zone_id,
+           elb_zone_id=elb_zone_id,
+           elb_dns=elb_dns,
+           region=region,
+           profile=profile,
+           action="UPSERT")
+

@@ -1,5 +1,5 @@
 from k8s import get_hosts
-from route53 import add_dns
+from route53 import add_dns, remove_dns
 import logging
 import argparse
 
@@ -20,6 +20,7 @@ if __name__ == "__main__":
     parser.add_argument("--target", type=str, dest="target", help="target dns name entry (elb dns name or similar)", default=None)
     parser.add_argument("--target-zone-id", type=str, dest="target_zone_id", help="target dns zone id", default=None)
     parser.add_argument("--region", type=str, dest="region", help="region of target (ie eu-west-1)", default="eu-west-1")
+    parser.add_argument("--delete", type=str, dest="delete", help="to delete entries (yes/no)", default="no")
 
     args = parser.parse_args()
 
@@ -34,11 +35,19 @@ if __name__ == "__main__":
 
     for host in hosts:
         try:
-            add_dns(ingress=host,
-                    zone_id=args.zone_id,
-                    elb_zone_id=args.target_zone_id,
-                    elb_dns=args.target,
-                    region=args.region,
-                    profile=args.profile)
+            if args.delete == "no" or not args.delete:
+                add_dns(ingress=host,
+                        zone_id=args.zone_id,
+                        elb_zone_id=args.target_zone_id,
+                        elb_dns=args.target,
+                        region=args.region,
+                        profile=args.profile)
+            elif args.delete == "yes":
+                remove_dns(ingress=host,
+                           zone_id=args.zone_id,
+                           elb_zone_id=args.target_zone_id,
+                           elb_dns=args.target,
+                           region=args.region,
+                           profile=args.profile)
         except ClientError as error:
             logger.error(f"Failed to add dns entry for {host}, because of {error}")
