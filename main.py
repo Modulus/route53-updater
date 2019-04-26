@@ -49,5 +49,8 @@ if __name__ == "__main__":
                            elb_dns=args.target,
                            region=args.region,
                            profile=args.profile)
+            else:
+                logger.error("What are you trying to do? I cannot understand your command. \
+                Either remote the --delete flag og write --delete yes/no")
         except ClientError as error:
             logger.error(f"Failed to add dns entry for {host}, because of {error}")
